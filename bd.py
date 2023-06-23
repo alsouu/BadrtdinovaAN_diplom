@@ -1,7 +1,7 @@
 import json
 import logging
 import psycopg2
-
+from psycopg2 import extensions, extras
 
 class Db:
     def __init__(self):
@@ -15,20 +15,38 @@ class Db:
         logging.info(f'создание таблицы')
         self.cursor.execute(
             '''CREATE TABLE VACANCYS(
-                VACANCY TEXT)''')
+                VACANCY JSON
+                )''')
         self.conn.commit()
 
     def update_tabel(self, data):
-        insert_query = '''INSERT INTO VACANCYS (VACANCY) 
-                VALUES (%s)'''
-
+        insert_query = '''INSERT INTO VACANCYS (VACANCY)
+                    VALUES (%s)'''
+        extensions.register_adapter(dict, extras.Json)
         self.cursor.execute(insert_query, [data])
         self.conn.commit()
 
     def clear_tabel(self):
-        logging.info(f'удаление таблицы')
+        logging.info(f'очищение таблицы')
         self.cursor.execute('''DELETE FROM VACANCYS''')
         self.conn.commit()
+
+    def del_tabel(self):
+        logging.info(f'удаление таблицы')
+        self.cursor.execute('''DROP TABLE VACANCYS''')
+        self.conn.commit()
+
+
+    def check_tabel_exist(self):
+        self.cursor.execute('''SELECT EXISTS(SELECT 1 FROM VACANCYS)''')
+        return self.cursor.fetchall()
+
+    def check_tabel_void(self):
+        logging.info(f'проверка на пустоту')
+
+        self.cursor.execute('''SELECT COUNT(*) FROM VACANCYS''')
+        return self.cursor.fetchall()
+
 
     def get_tabel(self):
         logging.info(f'получение таблицы')
@@ -39,7 +57,7 @@ class Db:
         vacancyslist = []
 
         for row in vacancys:
-            print(row)
             vacancyslist.append(json.loads(row[0]))
 
         return vacancyslist
+

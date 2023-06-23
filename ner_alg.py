@@ -1,4 +1,3 @@
-from PyPDF2 import PdfReader
 from gensim.models import Word2Vec
 from sklearn.metrics.pairwise import cosine_similarity
 from textanalysis import Analyse
@@ -42,11 +41,17 @@ class Ner_skills:
         sim_word = []
 
         for el in lst:
-            similar_tags = self.find_similar_tags(el, 0.85)
 
-            if similar_tags:
-                if similar_tags[0] != '1':
-                    sim_word.append(similar_tags[0])
+            try:
+
+                similar_tags = self.find_similar_tags(el, 0.85)
+
+                if similar_tags:
+                    if similar_tags[0] != '1':
+                        sim_word.append(similar_tags[0])
+
+            except KeyError:
+                continue
 
         sim_word = set(sim_word)
 
